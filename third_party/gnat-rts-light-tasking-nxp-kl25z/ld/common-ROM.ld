@@ -183,3 +183,6 @@ SECTIONS
 
   /DISCARD/ : { *(.ARM.extab .ARM.exidx) }
 }
+
+ASSERT(__rom_end + (__data_end - __data_start) <= (ORIGIN(flash_text) + LENGTH(flash_text)),
+        "FLASH overflow");

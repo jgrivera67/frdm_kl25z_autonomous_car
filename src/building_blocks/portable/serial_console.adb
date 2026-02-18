@@ -47,7 +47,7 @@ package body Serial_Console is
    --
    --  Size (in bytes) of the console output ring buffer
    --
-   Console_Output_Buffer_Size : constant := 256;
+   Console_Output_Buffer_Size : constant := 128;
 
    --
    --  Ring buffer of bytes
@@ -60,7 +60,8 @@ package body Serial_Console is
 
    task type Console_Output_Task_Type (
      Console_Ptr : not null access Console_Type)
-     with Priority => System.Priority'First + 1;
+     with Priority => System.Priority'First + 1,
+          Storage_Size => 1_024;
 
    --
    --  State variables of the serial console

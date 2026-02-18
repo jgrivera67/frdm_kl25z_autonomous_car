@@ -58,8 +58,7 @@ package Generic_Ring_Buffers is
    procedure Write_Non_Blocking (Ring_Buffer : in out Ring_Buffer_Type;
                                  Element : Element_Type;
                                  Write_Ok : out Boolean)
-     with Pre => Initialized (Ring_Buffer) and then
-                 not Are_Cpu_Interrupts_Disabled;
+     with Pre => Initialized (Ring_Buffer);
 
    procedure Write (Ring_Buffer : in out Ring_Buffer_Type;
                     Element : Element_Type)

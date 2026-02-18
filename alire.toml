@@ -23,4 +23,4 @@ gprbuild = "*"
 [actions.'case(os)'.windows]
 [actions.'case(os)'.'...']
 type = "post-build"
-command = ["sh", "-c", "arm-eabi-objdump -dSstl bin/nxp_kl25z_hello.elf > bin/nxp_kl25z_hello.lst; arm-eabi-objcopy -O binary bin/nxp_kl25z_hello.elf bin/nxp_kl25z_hello.bin"]
+command = ["sh", "-c", "arm-eabi-objdump -dSstl bin/frdm_kl25z_autonomous_car.elf > bin/frdm_kl25z_autonomous_car.lst; arm-eabi-objcopy -O binary bin/frdm_kl25z_autonomous_car.elf bin/frdm_kl25z_autonomous_car.bin"]
