@@ -1,0 +1,26 @@
+name = "frdm_kl25z_autonomous_car"
+description = "Autonomous toy race car"
+version = "0.1.0-dev"
+
+authors = ["J. German Rivera"]
+maintainers = ["J. German Rivera <jgrivera67@gmail.com>"]
+maintainers-logins = ["jgrivera67"]
+licenses = "Apache-2.0"
+website = ""
+tags = []
+
+executables = ["frdm_kl25z_autonomous_car"]
+
+[[depends-on]]
+gnat_arm_elf = "*"
+gnatprove = "*"
+gprbuild = "*"
+
+#[gpr-set-externals]
+#CPU_Core = "arm_cortex_r52"
+
+[[actions]]
+[actions.'case(os)'.windows]
+[actions.'case(os)'.'...']
+type = "post-build"
+command = ["sh", "-c", "arm-eabi-objdump -dSstl bin/nxp_kl25z_hello.elf > bin/nxp_kl25z_hello.lst; arm-eabi-objcopy -O binary bin/nxp_kl25z_hello.elf bin/nxp_kl25z_hello.bin"]
