@@ -65,10 +65,10 @@ abstract project Compiler_Flags is
                 --, "-gnatd.v"  --  Enforce SPARK rules of elaboration
                   );
 
-      Development_Only_Flags := ("-Og", -- No optimization
+      Development_Only_Flags := ("-Os", -- Optimize for size
                                  "-g"); -- Debug info
 
-      Release_Only_Flags := ("-O3",     -- Optimize for performance
+      Release_Only_Flags := ("-Os",     -- Optimize for size
                              "-gnatn",  -- Enable inlining
                              "-gnatp"); -- Suppress all runtime checks
 

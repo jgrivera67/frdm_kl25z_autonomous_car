@@ -293,7 +293,8 @@ private
    --
    task type Car_Controller_Task_Type (
      Car_Controller_Ptr : not null access Car_Controller_Type)
-     with Priority => System.Priority'Last - 2; -- High priority
+     with Priority => System.Priority'Last - 2, -- High priority
+          Storage_Size => 1_024;
 
    type Camera_Frame_Derivative_Type is
       array (TFC_Line_Scan_Camera.TFC_Camera_Frame_Pixel_Index_Type range <>)

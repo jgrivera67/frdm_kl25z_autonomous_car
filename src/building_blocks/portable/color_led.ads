@@ -93,7 +93,8 @@ private
 
    task type Led_Blinker_Task_Type (
       Rgb_Led_Ptr : not null access Rgb_Led_Type)
-      with Priority => System.Priority'Last - 1;
+      with Priority => System.Priority'Last - 1,
+           Storage_Size => 1_024;
 
    type Rgb_Led_Pins_Type is record
       Red_Pin : Gpio_Pin_Type;

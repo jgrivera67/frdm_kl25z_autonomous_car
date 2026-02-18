@@ -1,5 +1,5 @@
 --
---  Copyright (c) 2016, German Rivera
+--  Copyright (c) 2016-2026, German Rivera
 --  All rights reserved.
 --
 --  Redistribution and use in source and binary forms, with or without
@@ -67,7 +67,7 @@ procedure Main is
       Serial_Console.Lock;
       Serial_Console.Clear_Screen;
       Serial_Console.Print_String (
-        "Autonomous Car (Written in Ada 2012, built on " &
+        "Autonomous Car (Written in Ada 2022, built on " &
         GNAT.Source_Info.Compilation_Date &
         " at " & GNAT.Source_Info.Compilation_Time & ")" & ASCII.LF);
 
