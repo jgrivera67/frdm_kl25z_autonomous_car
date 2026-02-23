@@ -25,7 +25,6 @@
 --  POSSIBILITY OF SUCH DAMAGE.
 --
 
-with Ada.Synchronous_Task_Control;
 with System;
 with Microcontroller.Arm_Cortex_M;
 with Ada.Interrupts.Names;
@@ -33,7 +32,6 @@ with Runtime_Logs;
 with MKL25Z4.SIM;
 
 package body ADC_Driver is
-   use Ada.Synchronous_Task_Control;
    use Microcontroller.Arm_Cortex_M;
    use Ada.Interrupts;
 
@@ -54,15 +52,8 @@ package body ADC_Driver is
    --  @field Active_ADC_Channel A/D converter channel on which the current
    --         conversion was started or ADC_Channel_None if none.
    --  @field Resolution Resolution for A/D single-ended conversion
-   --  @field Conversion_Completed Flag that indicates if an outstanding A/D
-   --         conversion has completed
    --  @field Hardware_Average_On Flag indicating if hardware average is
    --         currently on or off
-   --  @field Last_Conversion_Result Last value read from the V/VREF field of
-   --         the corresponding ADC channel's reg_AD0DRn register, by the A/D
-   --         conversion completion interrupt handler.
-   --  @field Conversion_Susp_Obj Suspension object on which a task calling
-   --         ADC_Read_Channel waits for an A/D conversion to complete.
    --  @field Completion_Callback_Ptr Pointer to async A/D conversion
    --         completion callback to be invoked from the ADC ISR
    --
@@ -74,10 +65,7 @@ package body ADC_Driver is
       Initialized : Boolean := False;
       Active_ADC_Channel : Unsigned_8 := ADC_Channel_None;
       Resolution : ADC_Resolution_Type;
-      Conversion_Completed : Boolean := False;
       Hardware_Average_On : Boolean := False;
-      Last_Conversion_Result : Unsigned_16;
-      Conversion_Susp_Obj : Suspension_Object;
       Completion_Callback_Ptr : ADC_Completion_Callback_Access_Type;
    end record;
 
@@ -106,8 +94,7 @@ package body ADC_Driver is
               Attach_Handler => Names.ADC0_Interrupt;
 
       procedure ADC_Irq_Handler (
-         ADC_Device_Id : ADC_Device_Id_Type)
-         with Pre => not Are_Cpu_Interrupts_Disabled;
+         ADC_Device_Id : ADC_Device_Id_Type);
    end ADC_Interrupts_Object;
    pragma Unreferenced (ADC_Interrupts_Object);
 
@@ -178,7 +165,7 @@ package body ADC_Driver is
 
       --
       --  Configure ADC_SC1A register:
-      --  - AIEN bit = 0: Conversion complete interrupt is enabled.
+      --  - AIEN bit = 0: Conversion complete interrupt is disabled.
       --  - DIFF bit = 0: Single-ended conversions and input channels are
       --    selected.
       --  - ADC_SC1_ADCH_MASK = 0x1F: ADC turned off
@@ -510,14 +497,8 @@ package body ADC_Driver is
          pragma Assert (R_Value.D <= Max_Result_Value);
 
          ADC_Device_Var.Active_ADC_Channel := ADC_Channel_None;
-         if ADC_Device_Var.Completion_Callback_Ptr /= null then
-            ADC_Device_Var.Completion_Callback_Ptr (R_Value.D);
-         else
-            pragma Assert (not ADC_Device_Var.Conversion_Completed);
-            ADC_Device_Var.Conversion_Completed := True;
-            ADC_Device_Var.Last_Conversion_Result := R_Value.D;
-            Set_True (ADC_Device_Var.Conversion_Susp_Obj);
-         end if;
+         pragma Assert (ADC_Device_Var.Completion_Callback_Ptr /= null);
+         ADC_Device_Var.Completion_Callback_Ptr (R_Value.D);
       end ADC_Irq_Handler;
 
    end ADC_Interrupts_Object;

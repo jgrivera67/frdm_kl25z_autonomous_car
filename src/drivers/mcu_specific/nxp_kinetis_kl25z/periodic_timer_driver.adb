@@ -96,8 +96,7 @@ package body Periodic_Timer_Driver is
               Attach_Handler => Names.PIT_Interrupt;
 
        procedure Periodic_Timer_Irq_Handler (
-         Periodic_Timer_Id : Periodic_Timer_Device_Id_Type)
-         with Pre => not Are_Cpu_Interrupts_Disabled;
+         Periodic_Timer_Id : Periodic_Timer_Device_Id_Type);
 
    end PIT_Interrupts_Object;
    pragma Unreferenced (PIT_Interrupts_Object);
