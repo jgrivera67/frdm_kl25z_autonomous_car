@@ -25,14 +25,41 @@
 --  POSSIBILITY OF SUCH DAMAGE.
 --
 
-with Ada.Synchronous_Task_Control;
+with System;
 with Gpio_Driver;
 with Pin_Mux_Driver;
 
 package body TFC_Line_Scan_Camera is
-   use Ada.Synchronous_Task_Control;
    use Gpio_Driver;
    use Pin_Mux_Driver;
+
+   --
+   --  Protected object used to signal frame-capture completion from the ADC ISR
+   --  to Get_Next_Frame running in task context.
+   --
+   protected Camera_Frame_Sync is
+      pragma Interrupt_Priority (System.Interrupt_Priority'Last);
+      procedure Signal_Frame_Done;
+      --  Called from ADC ISR when all pixels have been captured.
+      --  Safe to call with PRIMASK=1.
+      entry Wait_Frame_Done;
+      --  Blocking: suspends the caller until Signal_Frame_Done is called.
+      --  Must be called from task context only.
+   private
+      Frame_Done : Boolean := False;
+   end Camera_Frame_Sync;
+
+   protected body Camera_Frame_Sync is
+      procedure Signal_Frame_Done is
+      begin
+         Frame_Done := True;
+      end Signal_Frame_Done;
+
+      entry Wait_Frame_Done when Frame_Done is
+      begin
+         Frame_Done := False;
+      end Wait_Frame_Done;
+   end Camera_Frame_Sync;
 
    --
    --  States of capturing camera frames
@@ -91,8 +118,6 @@ package body TFC_Line_Scan_Camera is
    --         Ping_Pong_Frame_Buffers
    --  @field Remaining_Pixels_Count Count of remaining pixels to capture for
    --         the current frame  being captured
-   --  @field Frame_Capture_Completed_Susp_Obj Suspension object to be signaled
-   --         when the  current frame capture completes
    --  @field Piggybacked_AD_Conversion_Array_Ptr Pointer to array of
    --         piggybacked ADC conversions
    --  @field Next_Piggybacked_AD_Conversion Index of next piggybacked ADC
@@ -110,7 +135,6 @@ package body TFC_Line_Scan_Camera is
       Camera_Frame_Captured : Boolean := False with Volatile;
       Frames_Captured_Count : Unsigned_32 := 0;
       Remaining_Pixels_Count : Unsigned_8 range 0 .. TFC_Num_Camera_Pixels;
-      Frame_Capture_Completed_Susp_Obj : Suspension_Object;
       Piggybacked_AD_Conversion_Array_Ptr :
          Piggybacked_AD_Conversion_Array_Access_Type;
       Next_Piggybacked_AD_Conversion : Positive;
@@ -248,16 +272,7 @@ package body TFC_Line_Scan_Camera is
                Frame_Capture_Var.State := Frame_Capture_Finished;
                pragma Assert (not Frame_Capture_Var.Camera_Frame_Captured);
                Frame_Capture_Var.Camera_Frame_Captured := True;
-
-               --
-               --  NOTE: It looks like we cannot use the Suspend_Until_True
-               --  here, due to a limitation in the Ada Ravenscar runtime for
-               --  the target MCU, that does not allow us to call Set_True from
-               --  an Interrupt handler.
-               --
-               --  Set_True (
-               --     Frame_Capture_Var.Frame_Capture_Completed_Susp_Obj);
-               --
+               Camera_Frame_Sync.Signal_Frame_Done;
 
                pragma Assert (Frame_Capture_Var.Next_Piggybacked_AD_Conversion
                               = Piggybacked_AD_Conversion_End);
@@ -322,22 +337,12 @@ package body TFC_Line_Scan_Camera is
       Start_Frame_Capture;
 
       --
-      --  NOTE: It looks like we cannot use the Suspend_Until_True here, due to
-      --  a limitation in the Ada Ravenscar runtime for the target MCU, that
-      --  does not allow us to call Set_True from an Interrupt handler (it may
-      --  hit an assert if there is a race between the Set_True call in
-      --  AD_Conversion_Completion_Callback and the Suspend_Until_True call
-      --  below:
+      --  Block until the ADC ISR signals that all pixels have been captured.
+      --  Camera_Frame_Sync.Wait_Frame_Done suspends the calling task, yielding
+      --  the CPU to other tasks (e.g. the command-line task) while the ADC ISR
+      --  chain drives the pixel capture.
       --
-      --  Suspend_Until_True (
-      --     Frame_Capture_Var.Frame_Capture_Completed_Susp_Obj);
-      --
-      --  So we have to use an ugly polling loop
-      --
-      while not Frame_Capture_Var.Camera_Frame_Captured loop
-         --delay until Clock + Milliseconds (1);
-         null;
-      end loop;
+      Camera_Frame_Sync.Wait_Frame_Done;
 
       pragma Assert (Frame_Capture_Var.Camera_Frame_Captured);
 
