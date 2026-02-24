@@ -54,6 +54,13 @@ package Generic_Ring_Buffers is
      with Pre => Initialized (Ring_Buffer);
    --  Non-blocking write. Safe to call from an ISR (PRIMASK=1).
 
+   procedure Write (Ring_Buffer : in out Ring_Buffer_Type;
+                    Element     :        Element_Type)
+     with Pre => Initialized (Ring_Buffer) and then
+                 not Are_Cpu_Interrupts_Disabled;
+   --  Blocking write. Must be called from task context only (not from an ISR).
+   --  Suspends the caller until space is available.
+
    procedure Read (Ring_Buffer : in out Ring_Buffer_Type;
                    Element : out Element_Type)
      with Pre => Initialized (Ring_Buffer) and then
@@ -77,6 +84,11 @@ private
                        Write_Ok : out Boolean);
       --  Non-blocking. Safe to call from an ISR (PRIMASK=1).
 
+      entry Write_Blocking (Element : Element_Type);
+      --  Blocking. The barrier (Num_Elements_Filled < Max_Num_Elements)
+      --  suspends the caller until space is available.
+      --  Must NOT be called from an ISR.
+
       entry Read (Element : out Element_Type);
       --  Blocking. The barrier (Num_Elements_Filled > 0) suspends the
       --  caller until at least one element is available.
@@ -86,6 +98,11 @@ private
       Write_Cursor        : Buffer_Index_Type := Buffer_Index_Type'First;
       Read_Cursor         : Buffer_Index_Type := Buffer_Index_Type'First;
       Num_Elements_Filled : Natural range 0 .. Max_Num_Elements := 0;
+      Num_Elements_Free   : Natural range 0 .. Max_Num_Elements := Max_Num_Elements;
+      --  Num_Elements_Free is kept in sync with Num_Elements_Filled so that
+      --  Write_Blocking can use "when Num_Elements_Free > 0" as a pure barrier
+      --  (Ravenscar pure barriers may only reference protected-object components,
+      --  not generic parameters such as Max_Num_Elements).
    end Buffer_Type;
 
    --

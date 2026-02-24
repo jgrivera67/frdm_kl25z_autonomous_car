@@ -59,6 +59,14 @@ package body Generic_Ring_Buffers is
 
    -- ** --
 
+   procedure Write (Ring_Buffer : in out Ring_Buffer_Type;
+                    Element     :        Element_Type) is
+   begin
+      Ring_Buffer.Buffer.Write_Blocking (Element);
+   end Write;
+
+   -- ** --
+
    protected body Buffer_Type is
 
       --
@@ -68,6 +76,21 @@ package body Generic_Ring_Buffers is
       --  runtime re-evaluates this barrier and posts PendSV to wake the
       --  reader task.  No Set_True call is needed.
       --
+      entry Write_Blocking (Element : Element_Type)
+        when Num_Elements_Free > 0 is
+      begin
+         Buffer_Data (Write_Cursor) := Element;
+         if Write_Cursor < Buffer_Index_Type'Last then
+            Write_Cursor := Write_Cursor + 1;
+         else
+            Write_Cursor := Buffer_Index_Type'First;
+         end if;
+         Num_Elements_Filled := Num_Elements_Filled + 1;
+         Num_Elements_Free   := Num_Elements_Free   - 1;
+      end Write_Blocking;
+
+      -- ** --
+
       entry Read (Element : out Element_Type)
         when Num_Elements_Filled > 0 is
       begin
@@ -78,6 +101,7 @@ package body Generic_Ring_Buffers is
             Read_Cursor := Buffer_Index_Type'First;
          end if;
          Num_Elements_Filled := Num_Elements_Filled - 1;
+         Num_Elements_Free   := Num_Elements_Free   + 1;
       end Read;
 
       -- ** --
@@ -85,7 +109,7 @@ package body Generic_Ring_Buffers is
       procedure Write (Element  :     Element_Type;
                        Write_Ok : out Boolean) is
       begin
-         if Num_Elements_Filled = Max_Num_Elements then
+         if Num_Elements_Free = 0 then
             Write_Ok := False;
          else
             Buffer_Data (Write_Cursor) := Element;
@@ -95,6 +119,7 @@ package body Generic_Ring_Buffers is
                Write_Cursor := Buffer_Index_Type'First;
             end if;
             Num_Elements_Filled := Num_Elements_Filled + 1;
+            Num_Elements_Free   := Num_Elements_Free   - 1;
             Write_Ok := True;
          end if;
       end Write;

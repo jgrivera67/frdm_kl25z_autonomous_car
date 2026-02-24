@@ -61,7 +61,7 @@ package body Serial_Console is
    task type Console_Output_Task_Type (
      Console_Ptr : not null access Console_Type)
      with Priority => System.Priority'First + 1,
-          Storage_Size => 512;
+          Storage_Size => 1_024;
 
    --
    --  State variables of the serial console
@@ -271,17 +271,11 @@ package body Serial_Console is
 
    -- ** --
    procedure Put_Char (C : Character) is
-      Write_Ok : Boolean;
    begin
-      --  Spin until space is available.  Each Write_Non_Blocking call is a
-      --  Ravenscar scheduling point, so Console_Output_Task_Type can run
-      --  between iterations and drain the buffer.
-      loop
-         Byte_Ring_Buffers.Write_Non_Blocking (Console_Var.Output_Buffer,
-                                               Byte (Character'Pos (C)),
-                                               Write_Ok);
-         exit when Write_Ok;
-      end loop;
+      --  Blocking write: suspends the caller if the ring buffer is full,
+      --  yielding CPU to Console_Output_Task_Type to drain the buffer.
+      Byte_Ring_Buffers.Write (Console_Var.Output_Buffer,
+                               Byte (Character'Pos (C)));
    end Put_Char;
 
    -- ** --
