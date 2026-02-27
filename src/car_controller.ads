@@ -49,22 +49,28 @@ package Car_Controller is
    function Save_Config_Parameters return Boolean
      with Pre => Initialized;
 
-   procedure Set_Steering_Servo_Derivative_Gain (Gain : Float)
+   procedure Set_Steering_Servo_Derivative_Gain (
+      Gain : App_Configuration.PID_Gain_Type)
       with Pre => Initialized;
 
-   procedure Set_Steering_Servo_Integral_Gain (Gain : Float)
+   procedure Set_Steering_Servo_Integral_Gain (
+      Gain : App_Configuration.PID_Gain_Type)
       with Pre => Initialized;
 
-   procedure Set_Steering_Servo_Proportional_Gain (Gain : Float)
+   procedure Set_Steering_Servo_Proportional_Gain (
+      Gain : App_Configuration.PID_Gain_Type)
       with Pre => Initialized;
 
-   procedure Set_Wheel_Differential_Derivative_Gain (Gain : Float)
+   procedure Set_Wheel_Differential_Derivative_Gain (
+      Gain : App_Configuration.PID_Gain_Type)
       with Pre => Initialized;
 
-   procedure Set_Wheel_Differential_Integral_Gain (Gain : Float)
+   procedure Set_Wheel_Differential_Integral_Gain (
+      Gain : App_Configuration.PID_Gain_Type)
       with Pre => Initialized;
 
-   procedure Set_Wheel_Differential_Proportional_Gain (Gain : Float)
+   procedure Set_Wheel_Differential_Proportional_Gain (
+      Gain : App_Configuration.PID_Gain_Type)
       with Pre => Initialized;
 
    procedure Set_Car_Straight_Wheel_Motor_Duty_Cycle (
@@ -296,9 +302,16 @@ private
      with Priority => System.Priority'Last - 2, -- High priority
           Storage_Size => 1_024;
 
+   --
+   --  Fixed-point type for camera pixel intensity derivatives.
+   --  Values are (pixel_right - pixel_left) / 2, range -127.5 .. +127.5.
+   --  Small = 0.5 = 2**(-1); stored as 16-bit signed integer.
+   --
+   type Camera_Pixel_Derivative_Type is delta 0.5 range -256.0 .. 256.0;
+
    type Camera_Frame_Derivative_Type is
       array (TFC_Line_Scan_Camera.TFC_Camera_Frame_Pixel_Index_Type range <>)
-      of Float;
+      of Camera_Pixel_Derivative_Type;
 
    --
    --  Car controller object type

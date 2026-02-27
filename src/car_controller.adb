@@ -173,12 +173,10 @@ package body Car_Controller is
       else
          Servo_Pwm_Duty_Cycle :=
             TFC_Steering_Servo.Servo_Pulse_Width_Us_Type (
-               Float'Rounding (
-                  Float (TFC_Steering_Servo.Servo_Min_Duty_Cycle_Us) +
-                  Float (Trimpot_Setting) *
-                     (Float (TFC_Steering_Servo.Servo_Max_Duty_Cycle_Us) -
-                      Float (TFC_Steering_Servo.Servo_Min_Duty_Cycle_Us)) /
-                      15.0));
+               TFC_Steering_Servo.Servo_Min_Duty_Cycle_Us +
+               (Integer (Trimpot_Setting) *
+                  (TFC_Steering_Servo.Servo_Max_Duty_Cycle_Us -
+                   TFC_Steering_Servo.Servo_Min_Duty_Cycle_Us) + 7) / 15);
       end if;
 
       return Servo_Pwm_Duty_Cycle;
@@ -201,12 +199,10 @@ package body Car_Controller is
       else
          Motor_Pwm_Duty_Cycle :=
             TFC_Wheel_Motors.Motor_Pulse_Width_Us_Type (
-               Float'Rounding (
-                  Float (TFC_Wheel_Motors.Motor_Min_Duty_Cycle_Us) +
-                  Float (Trimpot_Setting) *
-                     (Float (TFC_Wheel_Motors.Motor_Max_Duty_Cycle_Us) -
-                      Float (TFC_Wheel_Motors.Motor_Min_Duty_Cycle_Us)) /
-                      15.0));
+               TFC_Wheel_Motors.Motor_Min_Duty_Cycle_Us +
+               (Integer (Trimpot_Setting) *
+                  (TFC_Wheel_Motors.Motor_Max_Duty_Cycle_Us -
+                   TFC_Wheel_Motors.Motor_Min_Duty_Cycle_Us) + 7) / 15);
       end if;
 
       return Motor_Pwm_Duty_Cycle;
@@ -764,7 +760,6 @@ package body Car_Controller is
       use Serial_Console;
       Min_Y : Natural := Natural (Unsigned_8'Last);
       Max_Y : Natural := Natural (Unsigned_8'First);
-      Y_Scale : Float;
       Y : Natural;
       Line : Line_Type;
       Column : Column_Type;
@@ -781,44 +776,50 @@ package body Car_Controller is
          end if;
       end loop;
 
-      Y_Scale := Float (Max_Y - Min_Y + 1) /
-                 Float (Natural (Bottom_Line) - Natural (Top_Line) + 1);
-      if Y_Scale < 1.0 then
-         Y_Scale := 1.0;
-      end if;
+      declare
+         Data_Range   : constant Positive := Max_Y - Min_Y + 1;
+         Display_Rows : constant Positive :=
+            Natural (Bottom_Line) - Natural (Top_Line) + 1;
+      begin
+         Save_Cursor_and_Attributes;
+         Turn_Off_Cursor;
+         Erase_Lines (Top_Line, Bottom_Line);
 
-      Save_Cursor_and_Attributes;
-      Turn_Off_Cursor;
-      Erase_Lines (Top_Line, Bottom_Line);
+         for X in Camera_Frame'Range loop
+            Y := Natural (Camera_Frame (X));
+            if Data_Range >= Display_Rows then
+               Line := Serial_Console.Line_Type (
+                          Natural (Bottom_Line) -
+                          ((Y - Min_Y) * Display_Rows + Data_Range / 2) /
+                          Data_Range);
+            else
+               Line := Serial_Console.Line_Type (
+                          Natural (Bottom_Line) - (Y - Min_Y));
+            end if;
 
-      for X in Camera_Frame'Range loop
-         Y := Natural (Camera_Frame (X));
-         Line := Serial_Console.Line_Type (
-                    Natural (Bottom_Line) -
-                    Natural (Float'Rounding (Float (Y - Min_Y) / Y_Scale)));
+            if Reverse_Plot then
+               Column := Column_Type (Camera_Frame'Last - X + 1);
+            else
+               Column := Column_Type (X);
+            end if;
 
-         if Reverse_Plot then
-            Column := Column_Type (Camera_Frame'Last - X + 1);
-         else
-            Column := Column_Type (X);
-         end if;
+            if Line > Bottom_Line then
+               Set_Cursor_And_Attributes (
+                  Bottom_Line, Column, [Attribute_Underlined => 1, others => 0]);
+            elsif Line < Top_Line then
+               Set_Cursor_And_Attributes (
+                  Top_Line, Column, [Attribute_Underlined => 1, others => 0]);
+            else
+               Set_Cursor_And_Attributes (
+                  Line, Column, Attributes_Normal);
+            end if;
 
-         if Line > Bottom_Line then
-            Set_Cursor_And_Attributes (
-               Bottom_Line, Column, [Attribute_Underlined => 1, others => 0]);
-         elsif Line < Top_Line then
-            Set_Cursor_And_Attributes (
-               Top_Line, Column, [Attribute_Underlined => 1, others => 0]);
-         else
-            Set_Cursor_And_Attributes (
-               Line, Column, Attributes_Normal);
-         end if;
+            Put_Char (Plot_Point_Symbol);
+         end loop;
 
-         Put_Char (Plot_Point_Symbol);
-      end loop;
-
-      Turn_On_Cursor;
-      Restore_Cursor_and_Attributes;
+         Turn_On_Cursor;
+         Restore_Cursor_and_Attributes;
+      end; --  declare Data_Range / Display_Rows
    end Plot_Frame_Graph;
 
    ------------------
@@ -1034,7 +1035,8 @@ package body Car_Controller is
    -- Set_Steering_Servo_Derivative_Gain --
    ----------------------------------------
 
-   procedure Set_Steering_Servo_Derivative_Gain (Gain : Float)
+   procedure Set_Steering_Servo_Derivative_Gain (
+      Gain : App_Configuration.PID_Gain_Type)
    is
    begin
       Car_Controller_Obj.Config_Parameters.
@@ -1045,7 +1047,8 @@ package body Car_Controller is
    -- Set_Steering_Servo_Integral_Gain --
    --------------------------------------
 
-   procedure Set_Steering_Servo_Integral_Gain (Gain : Float)
+   procedure Set_Steering_Servo_Integral_Gain (
+      Gain : App_Configuration.PID_Gain_Type)
    is
    begin
       Car_Controller_Obj.Config_Parameters.
@@ -1056,7 +1059,8 @@ package body Car_Controller is
    -- Set_Steering_Servo_Proportional_Gain --
    ------------------------------------------
 
-   procedure Set_Steering_Servo_Proportional_Gain (Gain : Float)
+   procedure Set_Steering_Servo_Proportional_Gain (
+      Gain : App_Configuration.PID_Gain_Type)
    is
    begin
       Car_Controller_Obj.Config_Parameters.
@@ -1090,7 +1094,8 @@ package body Car_Controller is
    -- Set_Wheel_Differential_Derivative_Gain --
    --------------------------------------------
 
-   procedure Set_Wheel_Differential_Derivative_Gain (Gain : Float)
+   procedure Set_Wheel_Differential_Derivative_Gain (
+      Gain : App_Configuration.PID_Gain_Type)
    is
    begin
       Car_Controller_Obj.Config_Parameters.
@@ -1101,7 +1106,8 @@ package body Car_Controller is
    -- Set_Wheel_Differential_Integral_Gain --
    ------------------------------------------
 
-   procedure Set_Wheel_Differential_Integral_Gain (Gain : Float)
+   procedure Set_Wheel_Differential_Integral_Gain (
+      Gain : App_Configuration.PID_Gain_Type)
    is
    begin
       Car_Controller_Obj.Config_Parameters.
@@ -1112,7 +1118,8 @@ package body Car_Controller is
    -- Set_Wheel_Differential_Proportional_Gain --
    ----------------------------------------------
 
-   procedure Set_Wheel_Differential_Proportional_Gain (Gain : Float)
+   procedure Set_Wheel_Differential_Proportional_Gain (
+      Gain : App_Configuration.PID_Gain_Type)
    is
    begin
       Car_Controller_Obj.Config_Parameters.

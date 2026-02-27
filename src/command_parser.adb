@@ -221,7 +221,7 @@ package body Command_Parser is
         ("PID control algorithm constants:" & ASCII.LF);
 
       Float_To_Decimal_String
-        (Config_Parameters.Steering_Servo_Proportional_Gain,
+        (Float (Config_Parameters.Steering_Servo_Proportional_Gain),
          Float_Str,
          Float_Str_Length);
 
@@ -232,7 +232,7 @@ package body Command_Parser is
            ASCII.LF);
 
       Float_To_Decimal_String
-        (Config_Parameters.Steering_Servo_Integral_Gain,
+        (Float (Config_Parameters.Steering_Servo_Integral_Gain),
          Float_Str,
          Float_Str_Length);
 
@@ -243,7 +243,7 @@ package body Command_Parser is
            ASCII.LF);
 
       Float_To_Decimal_String
-        (Config_Parameters.Steering_Servo_Derivative_Gain,
+        (Float (Config_Parameters.Steering_Servo_Derivative_Gain),
          Float_Str,
          Float_Str_Length);
 
@@ -254,7 +254,7 @@ package body Command_Parser is
            ASCII.LF);
 
       Float_To_Decimal_String
-        (Config_Parameters.Wheel_Differential_Proportional_Gain,
+        (Float (Config_Parameters.Wheel_Differential_Proportional_Gain),
          Float_Str,
          Float_Str_Length);
 
@@ -265,7 +265,7 @@ package body Command_Parser is
            ASCII.LF);
 
       Float_To_Decimal_String
-        (Config_Parameters.Wheel_Differential_Integral_Gain,
+        (Float (Config_Parameters.Wheel_Differential_Integral_Gain),
          Float_Str,
          Float_Str_Length);
 
@@ -276,7 +276,7 @@ package body Command_Parser is
            ASCII.LF);
 
       Float_To_Decimal_String
-        (Config_Parameters.Wheel_Differential_Derivative_Gain,
+        (Float (Config_Parameters.Wheel_Differential_Derivative_Gain),
          Float_Str,
          Float_Str_Length);
 
@@ -668,7 +668,8 @@ package body Command_Parser is
          return;
       end if;
 
-      Car_Controller.Set_Steering_Servo_Derivative_Gain (Gain_Value);
+      Car_Controller.Set_Steering_Servo_Derivative_Gain (
+         App_Configuration.PID_Gain_Type (Gain_Value));
    end Cmd_Set_Pid_Steering_Servo_Derivative_Gain;
 
    ----------------------------------------------
@@ -700,7 +701,8 @@ package body Command_Parser is
          return;
       end if;
 
-      Car_Controller.Set_Steering_Servo_Integral_Gain (Gain_Value);
+      Car_Controller.Set_Steering_Servo_Integral_Gain (
+         App_Configuration.PID_Gain_Type (Gain_Value));
    end Cmd_Set_Pid_Steering_Servo_Integral_Gain;
 
    --------------------------------------------------
@@ -732,7 +734,8 @@ package body Command_Parser is
          return;
       end if;
 
-      Car_Controller.Set_Steering_Servo_Proportional_Gain (Gain_Value);
+      Car_Controller.Set_Steering_Servo_Proportional_Gain (
+         App_Configuration.PID_Gain_Type (Gain_Value));
    end Cmd_Set_Pid_Steering_Servo_Proportional_Gain;
 
    ------------------------------------
@@ -800,7 +803,8 @@ package body Command_Parser is
          return;
       end if;
 
-      Car_Controller.Set_Wheel_Differential_Derivative_Gain (Gain_Value);
+      Car_Controller.Set_Wheel_Differential_Derivative_Gain (
+         App_Configuration.PID_Gain_Type (Gain_Value));
    end Cmd_Set_Pid_Wheel_Differential_Derivative_Gain;
 
    --------------------------------------------------
@@ -832,7 +836,8 @@ package body Command_Parser is
          return;
       end if;
 
-      Car_Controller.Set_Wheel_Differential_Integral_Gain (Gain_Value);
+      Car_Controller.Set_Wheel_Differential_Integral_Gain (
+         App_Configuration.PID_Gain_Type (Gain_Value));
    end Cmd_Set_Pid_Wheel_Differential_Integral_Gain;
 
    ------------------------------------------------------
@@ -864,7 +869,8 @@ package body Command_Parser is
          return;
       end if;
 
-      Car_Controller.Set_Wheel_Differential_Proportional_Gain (Gain_Value);
+      Car_Controller.Set_Wheel_Differential_Proportional_Gain (
+         App_Configuration.PID_Gain_Type (Gain_Value));
    end Cmd_Set_Pid_Wheel_Differential_Proportional_Gain;
 
    --------------

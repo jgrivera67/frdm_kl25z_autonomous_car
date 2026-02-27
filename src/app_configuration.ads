@@ -37,22 +37,29 @@ package App_Configuration is
    use Interfaces;
 
    --
+   --  Fixed-point type for PID controller gain values and intermediate products.
+   --  Small = 2**(-10) ~= 0.000977. Range covers individual gains (~0.001..200)
+   --  as well as intermediate products (Gain * Error_Term <= 200 * 1000 = 200_000).
+   --
+   type PID_Gain_Type is delta 0.001 range -1_000_000.0 .. 1_000_000.0;
+
+   --
    --  Application-specific configurable parameters
    --
    type Config_Parameters_Type is record
       --
       --  Steering servo PID controller constants:
       --
-      Steering_Servo_Proportional_Gain : Float;
-      Steering_Servo_Integral_Gain : Float;
-      Steering_Servo_Derivative_Gain : Float;
+      Steering_Servo_Proportional_Gain : PID_Gain_Type;
+      Steering_Servo_Integral_Gain : PID_Gain_Type;
+      Steering_Servo_Derivative_Gain : PID_Gain_Type;
 
       --
       --  Wheel differential PID controller constants:
       --
-      Wheel_Differential_Proportional_Gain : Float;
-      Wheel_Differential_Integral_Gain : Float;
-      Wheel_Differential_Derivative_Gain : Float;
+      Wheel_Differential_Proportional_Gain : PID_Gain_Type;
+      Wheel_Differential_Integral_Gain : PID_Gain_Type;
+      Wheel_Differential_Derivative_Gain : PID_Gain_Type;
 
       --
       --  Base wheel motor duty cycle when the car is going straight

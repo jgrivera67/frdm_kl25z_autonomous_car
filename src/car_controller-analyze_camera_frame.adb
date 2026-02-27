@@ -77,18 +77,21 @@ is
       --     f'(n - 1) = (f(n - 1) - f(n - 2)) / 2
       --
       Frame_Derivative (Frame_Derivative'First) :=
-         Float (Integer (Camera_Frame (Camera_Frame'First + 1)) -
-                Integer (Camera_Frame (Camera_Frame'First))) / 2.0;
+         Camera_Pixel_Derivative_Type (
+            Integer (Camera_Frame (Camera_Frame'First + 1)) -
+            Integer (Camera_Frame (Camera_Frame'First))) / 2;
 
       for X in Camera_Frame'First + 1 .. Camera_Frame'Last - 1 loop
          Frame_Derivative (X) :=
-            Float (Integer (Camera_Frame (X + 1)) -
-                   Integer (Camera_Frame (X - 1))) / 2.0;
+            Camera_Pixel_Derivative_Type (
+               Integer (Camera_Frame (X + 1)) -
+               Integer (Camera_Frame (X - 1))) / 2;
       end loop;
 
       Frame_Derivative (Frame_Derivative'Last) :=
-         Float (Integer (Camera_Frame (Camera_Frame'Last)) -
-                Integer (Camera_Frame (Camera_Frame'Last - 1))) / 2.0;
+         Camera_Pixel_Derivative_Type (
+            Integer (Camera_Frame (Camera_Frame'Last)) -
+            Integer (Camera_Frame (Camera_Frame'Last - 1))) / 2;
    end Compute_Frame_Derivative;
 
    -------------------------------------
@@ -117,8 +120,8 @@ is
    is
       Track_Edge_Start_Index : TFC_Camera_Frame_Pixel_Index_Type;
       Track_Edge_End_Index : TFC_Camera_Frame_Pixel_Index_Type;
-      Min_Derivative : Float;
-      Max_Derivative : Float;
+      Min_Derivative : Camera_Pixel_Derivative_Type;
+      Max_Derivative : Camera_Pixel_Derivative_Type;
    begin
       --
       --  Try to detect the left edge of the track by analyzing the derivative
@@ -163,8 +166,8 @@ is
    is
       Track_Edge_Start_Index : TFC_Camera_Frame_Pixel_Index_Type;
       Track_Edge_End_Index : TFC_Camera_Frame_Pixel_Index_Type;
-      Min_Derivative : Float;
-      Max_Derivative : Float;
+      Min_Derivative : Camera_Pixel_Derivative_Type;
+      Max_Derivative : Camera_Pixel_Derivative_Type;
    begin
       --
       --  Try to detect the right edge of the track by analyzing the derivative

@@ -50,25 +50,26 @@ package body App_Configuration is
    --  PID control algorithm default constants:
    --
 
-   Default_Steering_Servo_Proportional_Gain : constant Float :=
-      (Float (TFC_Steering_Servo.Servo_Max_Duty_Cycle_Us -
-              TFC_Steering_Servo.Servo_Middle_Duty_Cycle_Us) /
-       Float (TFC_Line_Scan_Camera.TFC_Num_Camera_Pixels)) * 20.0; --16.0;
+   Default_Steering_Servo_Proportional_Gain : constant PID_Gain_Type :=
+      (PID_Gain_Type (TFC_Steering_Servo.Servo_Max_Duty_Cycle_Us -
+                      TFC_Steering_Servo.Servo_Middle_Duty_Cycle_Us) /
+       Integer (TFC_Line_Scan_Camera.TFC_Num_Camera_Pixels)) * 20; -- 16;
 
-   Default_Steering_Servo_Integral_Gain : constant Float :=
-      Default_Steering_Servo_Proportional_Gain * 0.5; --0.8;
+   Default_Steering_Servo_Integral_Gain : constant PID_Gain_Type :=
+      Default_Steering_Servo_Proportional_Gain / 2; -- 0.8;
 
-   Default_Steering_Servo_Derivative_Gain : constant Float := 0.1;
+   --  0.099609375 = 102 * 2**(-10) is the nearest exactly-representable value to 0.1
+   Default_Steering_Servo_Derivative_Gain : constant PID_Gain_Type :=
+      0.099609375;
 
-   Default_Wheel_Differential_Proportional_Gain : constant Float :=
-      (Float (TFC_Wheel_Motors.Motor_Max_Duty_Cycle_Us -
-              TFC_Wheel_Motors.Motor_Stopped_Duty_Cycle_Us) /
-       Float (TFC_Line_Scan_Camera.TFC_Num_Camera_Pixels)) * 10.0; --8.0;
+   Default_Wheel_Differential_Proportional_Gain : constant PID_Gain_Type :=
+      (PID_Gain_Type (TFC_Wheel_Motors.Motor_Max_Duty_Cycle_Us -
+                      TFC_Wheel_Motors.Motor_Stopped_Duty_Cycle_Us) /
+       Integer (TFC_Line_Scan_Camera.TFC_Num_Camera_Pixels)) * 10; -- 8;
 
-   Default_Wheel_Differential_Integral_Gain : constant Float :=
-      Default_Wheel_Differential_Proportional_Gain * 0.0;
+   Default_Wheel_Differential_Integral_Gain : constant PID_Gain_Type := 0.0;
 
-   Default_Wheel_Differential_Derivative_Gain : constant Float := 0.0;
+   Default_Wheel_Differential_Derivative_Gain : constant PID_Gain_Type := 0.0;
 
    --
    --  Default wheel motor duty cycle when the car is going straight

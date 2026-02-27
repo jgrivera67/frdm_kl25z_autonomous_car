@@ -31,6 +31,7 @@ separate (Car_Controller)
 procedure Drive_Car (Car_Controller_Obj : in out Car_Controller_Type)
 is
    use PWM_Driver;
+   use App_Configuration;
    function Calculate_New_Steering_Servo_Duty_Cycle (
       Duty_Cycle_Offset : Integer)
       return TFC_Steering_Servo.Servo_Pulse_Width_Us_Type;
@@ -125,14 +126,12 @@ begin -- Drive_Car
       Offset_Steering_Servo_Pwm_Duty_Cycle := 0;
    else
       Offset_Steering_Servo_Pwm_Duty_Cycle :=
-         Integer (Float'Rounding (
-            PID_Params.Steering_Servo_Proportional_Gain *
-               Float (PID_Error) +
+         Integer (
+            PID_Params.Steering_Servo_Proportional_Gain * PID_Error +
             PID_Params.Steering_Servo_Integral_Gain *
-               Float (Car_Controller_Obj.PID_Integral_Term) +
-            PID_Params.Steering_Servo_Derivative_Gain *
-               Float (Derivative_Term)
-         ));
+               Car_Controller_Obj.PID_Integral_Term +
+            PID_Params.Steering_Servo_Derivative_Gain * Derivative_Term
+         );
    end if;
 
    if Offset_Steering_Servo_Pwm_Duty_Cycle > 0 then
@@ -176,14 +175,12 @@ begin -- Drive_Car
                Offset_Steering_Servo_Pwm_Duty_Cycle);
 
       Offset_Wheel_Motor_Pwm_Duty_Cycle :=
-         abs Integer (Float'Rounding (
-               PID_Params.Wheel_Differential_Proportional_Gain *
-                  Float (PID_Error) +
+         abs Integer (
+               PID_Params.Wheel_Differential_Proportional_Gain * PID_Error +
                PID_Params.Wheel_Differential_Integral_Gain *
-                  Float (Car_Controller_Obj.PID_Integral_Term) +
-               PID_Params.Wheel_Differential_Derivative_Gain *
-                  Float (Derivative_Term)
-            ));
+                  Car_Controller_Obj.PID_Integral_Term +
+               PID_Params.Wheel_Differential_Derivative_Gain * Derivative_Term
+            );
 
       if New_Steering_State = Car_Turning_Left then
          --
