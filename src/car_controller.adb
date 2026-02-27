@@ -1403,11 +1403,12 @@ package body Car_Controller is
 
    task body Car_Controller_Task_Type is
       Next_Polling_Time : Ada.Real_Time.Time;
+      Polling_Period_Ms : constant Ada.Real_Time.Time_Span := Milliseconds (10);
    begin
       Suspend_Until_True (
          Car_Controller_Ptr.Car_Controller_Task_Suspension_Obj);
 
-      Next_Polling_Time := Clock;
+      Next_Polling_Time := Clock + Polling_Period_Ms;
 
       loop
          if Car_Controller_Obj.Car_State /= Car_Off then
@@ -1426,10 +1427,13 @@ package body Car_Controller is
 
             --  TODO:
             --  Read_Accelerometer;
-            Next_Polling_Time := Clock;
          else
-            delay until Next_Polling_Time;
-            Next_Polling_Time := Next_Polling_Time + Milliseconds (10);
+            if Next_Polling_Time > Clock then
+               delay until Next_Polling_Time;
+               Next_Polling_Time := @ + Polling_Period_Ms;
+            else
+               Next_Polling_Time := Clock + Polling_Period_Ms;
+            end if;
          end if;
 
          Poll_Buttons;
