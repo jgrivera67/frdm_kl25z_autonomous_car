@@ -39,7 +39,7 @@ __vectors:
 	.word   __stack_end          /* stack top address */
 	.word   _start_rom           /* 1 Reset.  */
 	.word   fault                /* 2 NMI. */
-	.word   fault                /* 3 Hard fault. */
+	.word   hard_fault_exception_handler /* 3 Hard fault. */
 	.word   fault                /* 4 reserved. */
 	.word   fault                /* 5 reserved. */
 	.word   fault                /* 6 reserved. */
@@ -177,4 +177,3 @@ __gnat_sys_tick_trap:
 
 	.thumb_func
 fault:	b fault
-

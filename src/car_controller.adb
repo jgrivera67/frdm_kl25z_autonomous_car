@@ -25,7 +25,6 @@
 --  POSSIBILITY OF SUCH DAMAGE.
 --
 
-with Runtime_Logs;
 with Ada.Real_Time;
 with ADC_Driver;
 with TFC_Push_Buttons;
@@ -1396,11 +1395,12 @@ package body Car_Controller is
    ------------------------------
 
    task body Car_Controller_Task_Type is
+      Next_Polling_Time : Ada.Real_Time.Time;
    begin
       Suspend_Until_True (
          Car_Controller_Ptr.Car_Controller_Task_Suspension_Obj);
 
-      Runtime_Logs.Info_Print ("Car Controller task started");
+      Next_Polling_Time := Clock;
 
       loop
          if Car_Controller_Obj.Car_State /= Car_Off then
@@ -1411,7 +1411,6 @@ package body Car_Controller is
                Car_Controller_Obj.Camera_Frames_Count + 1;
 
             Set_Car_Event (Event_Camera_Frame_Received);
-
             --
             --  NOTE: other analog inputs can only be obtained if camera
             --  frames are being read.
@@ -1420,8 +1419,10 @@ package body Car_Controller is
 
             --  TODO:
             --  Read_Accelerometer;
+            Next_Polling_Time := Clock;
          else
-            delay until Clock + Milliseconds (100);
+            delay until Next_Polling_Time;
+            Next_Polling_Time := Next_Polling_Time + Milliseconds (10);
          end if;
 
          Poll_Buttons;

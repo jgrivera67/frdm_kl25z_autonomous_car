@@ -7,11 +7,13 @@
 abstract project Compiler_Flags is
 
    package Compiler is
-      CPU_Core_Switches := ("-mcpu=cortex-m0plus",
-			    "-mthumb",
-			    --"-march=armv6-m",
-			    "-mlittle-endian",
-			    "-fno-omit-frame-pointer");
+      CPU_Core_Switches := (
+         "-mcpu=cortex-m0plus",
+			"-mthumb",
+			--"-march=armv6-m",
+			"-mlittle-endian",
+         "-mfloat-abi=soft",
+			"-fno-omit-frame-pointer");
 
       --  COMMON_FLAGS here is common flags (used for C and Ada).
       COMMON_FLAGS := CPU_Core_Switches &
