@@ -43,6 +43,13 @@ project frdm_kl25z_autonomous_car is
       for Executable_Suffix use ".elf";
    end Builder;
 
+   package Linker is
+      --  .data contains .ram_code (NOR flash routines that must run from SRAM).
+      --  On Cortex-M0+ (KL25Z) there is no MPU, so the RWX LOAD segment is
+      --  a hardware reality, not a security issue.
+      for Switches ("Ada") use ("-Wl,--no-warn-rwx-segments");
+   end Linker;
+
    -- package Binder is
    --    for Switches ("Ada") use ("-E*"); --  raw traceback
    -- end Binder;

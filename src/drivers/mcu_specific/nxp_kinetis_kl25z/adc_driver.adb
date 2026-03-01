@@ -26,13 +26,11 @@
 --
 
 with System;
-with Microcontroller.Arm_Cortex_M;
 with Ada.Interrupts.Names;
 with Runtime_Logs;
 with MKL25Z4.SIM;
 
 package body ADC_Driver is
-   use Microcontroller.Arm_Cortex_M;
    use Ada.Interrupts;
 
    --

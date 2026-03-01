@@ -67,7 +67,7 @@ separate (Stack_Trace_Capture)
       Prev_Frame_Pointer : Address;
       Stack_Pointer : Address;
       Stack_Entry_Pointer : access constant Stack_Entry_Type;
-      Max_Instructions_Scanned : constant Positive:= 1024;
+      Max_Instructions_Scanned : constant Positive := 1024;
       Stack_Entry_Alignment : constant Positive := Stack_Entry_Type'Size / Byte'Size;
       Program_Counter : Address := Start_Program_Counter;
       Instruction_Pattern_Found : Boolean := False;
@@ -96,7 +96,7 @@ separate (Stack_Trace_Capture)
          end if;
       end if;
 
-      if not Memory_Map.Valid_Ram_Pointer(Frame_Pointer, Stack_Entry_Alignment) then
+      if not Memory_Map.Valid_RAM_Pointer (Frame_Pointer, Stack_Entry_Alignment) then
          return False;
       end if;
 
@@ -108,8 +108,9 @@ separate (Stack_Trace_Capture)
          Instruction_Pointer := Address_To_Instruction_Pointer.To_Pointer (Program_Counter);
          Instruction := Instruction_Pointer.all;
          if Is_Add_R7_SP_Immeditate (Instruction) or else
-            Is_Sub_SP_Immeditate (Instruction)  or else
-            Is_Push_R7 (Instruction) then
+            Is_Sub_SP_Immeditate (Instruction) or else
+            Is_Push_R7 (Instruction)
+         then
             Instruction_Pattern_Found := True;
             exit;
          end if;
@@ -146,7 +147,8 @@ separate (Stack_Trace_Capture)
             Instruction_Pointer := Address_To_Instruction_Pointer.To_Pointer (Program_Counter);
             Instruction := Instruction_Pointer.all;
             if Is_Sub_SP_Immeditate (Instruction) or else
-               Is_Push_R7 (Instruction) then
+               Is_Push_R7 (Instruction)
+            then
                Instruction_Pattern_Found := True;
                exit;
             end if;
@@ -207,7 +209,8 @@ separate (Stack_Trace_Capture)
       --  after executing the 'push {...r7...}'
       --
       if Is_Push_R7 (Instruction) and then
-        not Push_Operand_Includes_LR (Instruction) then
+        not Push_Operand_Includes_LR (Instruction)
+      then
          Saved_R7_Stack_Offset := Get_Pushed_R7_Stack_Offset (Instruction);
          Stack_Pointer := Stack_Pointer + (Saved_R7_Stack_Offset + Stack_Entry_Size);
          if To_Integer (Stack_Pointer) >= To_Integer (Stack_End) then
@@ -224,7 +227,8 @@ separate (Stack_Trace_Capture)
             Instruction_Pointer := Address_To_Instruction_Pointer.To_Pointer (Program_Counter);
             Instruction := Instruction_Pointer.all;
             if Is_Push_R7 (Instruction) and then
-               Push_Operand_Includes_LR (Instruction) then
+               Push_Operand_Includes_LR (Instruction)
+            then
                Instruction_Pattern_Found := True;
                exit;
             end if;
@@ -250,7 +254,8 @@ separate (Stack_Trace_Capture)
       --
       Saved_R7_Stack_Offset := Get_Pushed_R7_Stack_Offset (Instruction);
       if To_Integer (Stack_Pointer + Saved_R7_Stack_Offset) >=
-         To_Integer (Stack_End) then
+         To_Integer (Stack_End)
+      then
          return False;
       end if;
 
@@ -259,7 +264,7 @@ separate (Stack_Trace_Capture)
             Stack_Pointer + Saved_R7_Stack_Offset);
 
       Prev_Frame_Pointer := To_Address (Integer_Address (Stack_Entry_Pointer.all));
-      if not Memory_Map.Valid_Ram_Pointer (Prev_Frame_Pointer, Stack_Entry_Alignment)
+      if not Memory_Map.Valid_RAM_Pointer (Prev_Frame_Pointer, Stack_Entry_Alignment)
          or else
          To_Integer (Prev_Frame_Pointer) <= To_Integer (Stack_Pointer)
          or else

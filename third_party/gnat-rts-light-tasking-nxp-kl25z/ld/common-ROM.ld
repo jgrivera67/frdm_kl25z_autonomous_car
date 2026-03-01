@@ -115,9 +115,11 @@ SECTIONS
 
  /*
   * Special data section for global variables that keep their values across
-  * resets:
+  * resets. Marked NOLOAD so it is not placed in any PT_LOAD segment:
+  * the section lives in SRAM and is intentionally NOT initialised at
+  * startup, preserving its content across soft resets.
   */
- .reset_persistent_data :
+ .reset_persistent_data (NOLOAD) :
  {
     . = ALIGN(4);
     __reset_persistent_data_start = .;

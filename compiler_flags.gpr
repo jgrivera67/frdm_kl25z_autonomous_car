@@ -23,7 +23,8 @@ abstract project Compiler_Flags is
                  --"-fverbose-asm",
                    "-fstack-usage",
                  --"-fstack-check", --  Generate stack checking code
-                   "-Wall");
+                   "-Wall",
+                   "-Werror");
 
       ADAFLAGS := COMMON_FLAGS &
                   ("-gnatwa" -- Enable all warnings
@@ -59,7 +60,7 @@ abstract project Compiler_Flags is
                   ,"-gnatyM120" --  Check maximum line length
                   ,"-gnatef"    --  Print full path in error messages
                   ,"-gnata"     --  Enable assertions and contracts
-               --??? ,"-gnatwe"    --  Warnings as errors
+                  ,"-gnatwe"    --  Warnings as errors
                   ,"-gnat2022"  --  Use Ada 2022
                   ,"-nostdinc"  --  Inhibit the search of the default location for the GNAT Run Time Library (RTL) source files.
                   ,"-nostdlib"  --  Inhibit the search of the default location for the GNAT Run Time Library (RTL) ALI files.

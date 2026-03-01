@@ -36,6 +36,7 @@ with Microcontroller.Arm_Cortex_M;
 
 package body Runtime_Logs is
    use System.Storage_Elements;
+   use Ada.Real_Time;
    use Interfaces.Bit_Types;
    use Microcontroller.Arm_Cortex_M;
 
@@ -47,9 +48,6 @@ package body Runtime_Logs is
 
    procedure Log_Print_Uint32_Decimal (Runtime_Log : in out Runtime_Log_Type;
                                        Value : Unsigned_32);
-
-   procedure Log_Print_Uint64_Decimal (Runtime_Log : in out Runtime_Log_Type;
-                                       Value : Unsigned_64);
 
    procedure Log_Print_Uint32_Hexadecimal (Runtime_Log :
                                              in out Runtime_Log_Type;
@@ -81,10 +79,6 @@ package body Runtime_Logs is
                                 Msg : String;
                                 Code_Address : Address;
                                 With_Stack_Trace : Boolean := False) is
-      function Time_To_Unsigned_64 is
-        new Ada.Unchecked_Conversion (Source => Ada.Real_Time.Time,
-                                      Target => Unsigned_64);
-
       function Task_Id_To_Unsigned_32 is
         new Ada.Unchecked_Conversion (Source =>
                                          Ada.Task_Identification.Task_Id,
@@ -99,8 +93,10 @@ package body Runtime_Logs is
       Log_Print_Uint32_Decimal (Runtime_Log,
                                 Runtime_Log.Seq_Num);
       Log_Put_Char (Runtime_Log, ':');
-      Log_Print_Uint64_Decimal (
-         Runtime_Log, Time_To_Unsigned_64 (Time_Stamp));
+      Log_Print_Uint32_Decimal (
+         Runtime_Log,
+         Unsigned_32 ((Time_Stamp - Ada.Real_Time.Time_First) /
+                      Ada.Real_Time.Milliseconds (1)));
       Log_Put_Char (Runtime_Log, ':');
       if not Is_Caller_An_Interrupt_Handler then
          Calling_Task_Id := Ada.Task_Identification.Current_Task;
@@ -276,27 +272,6 @@ package body Runtime_Logs is
 
       Log_Print_String (Runtime_Log, Buffer (Start_Index .. Buffer'Last));
    end Log_Print_Uint32_Hexadecimal;
-
-   -- ** --
-
-   procedure Log_Print_Uint64_Decimal (Runtime_Log : in out Runtime_Log_Type;
-                                       Value : Unsigned_64) is
-      Buffer : String (1 .. 20);
-      Start_Index : Positive range Buffer'Range := Buffer'First;
-      Value_Left : Unsigned_64 := Value;
-   begin
-      for I in reverse Buffer'Range loop
-         Buffer (I) := Character'Val ((Value_Left mod 10) +
-                                        Character'Pos ('0'));
-         Value_Left := Value_Left / 10;
-         if Value_Left = 0 then
-            Start_Index := I;
-            exit;
-         end if;
-      end loop;
-
-      Log_Print_String (Runtime_Log, Buffer (Start_Index .. Buffer'Last));
-   end Log_Print_Uint64_Decimal;
 
    -- ** --
 

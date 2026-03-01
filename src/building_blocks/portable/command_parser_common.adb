@@ -53,6 +53,7 @@ package body Command_Parser_Common is
    is
       Value : Natural := 0;
    begin
+      Result := Positive'First;
       for Char_Value of Token_String loop
          if Char_Value not in '0' .. '9' then
             return False;
@@ -97,6 +98,7 @@ package body Command_Parser_Common is
    function Parse_Log_Name (Log_Name : String;
                             Log : out Runtime_Logs.Log_Type) return Boolean is
    begin
+      Log := Runtime_Logs.Log_Type'First;
       if Log_Name = "debug" or else Log_Name = "d" then
          Log := Runtime_Logs.Debug_Log;
       elsif Log_Name = "error" or else Log_Name = "e" then
@@ -189,6 +191,7 @@ package body Command_Parser_Common is
                          Color : out Color_Led.Led_Color_Type) return Boolean
    is
    begin
+      Color := Color_Led.Led_Color_Type'First;
       if Color_Name = "black" then
          Color := Color_Led.Black;
       elsif Color_Name = "red" then

@@ -38,6 +38,7 @@ private with System;
 --  @summary Car controller module
 --
 package Car_Controller is
+   pragma Elaborate_Body;
    use Interfaces;
 
    function Initialized return Boolean;
