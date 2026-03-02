@@ -61,7 +61,7 @@ package body Serial_Console is
    task type Console_Output_Task_Type (
      Console_Ptr : not null access Console_Type)
      with Priority => System.Priority'First + 1,
-          Storage_Size => 1_024;
+          Storage_Size => 512;
 
    --
    --  State variables of the serial console
